@@ -1,16 +1,19 @@
 const express = require('express');
 const fs = require('fs');
 const next = require('next');
+const path = require('path');
 
 const dev = process.env.NODE_ENV !== 'production';
-const appNext = next({ dev });
+const appNext = next({ dev, dir: path.resolve(__dirname, 'rasp-frontend') });
 const handle = appNext.getRequestHandler();
 
 appNext.prepare().then(() => {
     const app = express();
     const port = process.env.PORT || 3000;
 
-    // Обслуживание API-маршрутов
+    app.use(express.json());
+
+    // API-маршрут для поиска
     app.get('/api/search', (req, res) => {
         const groupName = req.query.group;
         fs.readFile('rasp-data.json', 'utf8', (err, data) => {
@@ -27,11 +30,8 @@ appNext.prepare().then(() => {
         });
     });
 
-    // Маршрут для обслуживания Next.js приложения и статических файлов
-    app.use(express.static('rasp-frontend/.next'));
-
-    // Передача всех остальных запросов Next.js приложению
-    app.all('*', (req, res) => {
+    // Маршрут для обслуживания Next.js приложения
+    app.get('*', (req, res) => {
         return handle(req, res);
     });
 
