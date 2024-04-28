@@ -1,35 +1,48 @@
 const express = require('express');
-const next = require('next');
-const dev = process.env.NODE_ENV !== 'production';
-const nextApp = next({ dev, dir: '../rasp-frontend' });
-const handle = nextApp.getRequestHandler();
 const fs = require('fs');
-const cors = require('cors'); // Подключаем модуль CORS
+const next = require('next');
 
-nextApp.prepare().then(() => {
-  const app = express();
+const dev = process.env.NODE_ENV !== 'production';
+const appNext = next({ dev });
+const handle = appNext.getRequestHandler();
 
-  app.use(express.json());
-  app.use(cors()); // Используем CORS middleware для разрешения запросов от другого источника
+appNext.prepare().then(() => {
+    const app = express();
+    const port = process.env.PORT || 4200;
 
-  app.get('/api/search', (req, res) => {
-    const groupName = req.query.group;
-    fs.readFile('rasp-data.json', 'utf8', (err, data) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send('Ошибка чтения файла');
-      }
-      const groups = JSON.parse(data);
-      if (groups[groupName]) {
-        res.json(groups[groupName]);
-      } else {
-        res.status(404).send('Группа не найдена');
-      }
+    app.use(express.json());
+
+    // Обслуживание статических файлов Next.js из папки .next
+    app.use(express.static('rasp-frontend/.next'));
+
+    // API-маршрут для поиска
+    app.get('/api/search', (req, res) => {
+        const groupName = req.query.group;
+        fs.readFile('rasp-data.json', 'utf8', (err, data) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Ошибка чтения файла');
+            }
+            const groups = JSON.parse(data);
+            if (groups[groupName]) {
+                res.json(groups[groupName]);
+            } else {
+                res.status(404).send('Группа не найдена');
+            }
+        });
     });
-  });
 
-  app.all('*', (req, res) => handle(req, res));
+    // Маршрут для обслуживания Next.js приложения
+    app.get('*', (req, res) => {
+        return handle(req, res);
+    });
 
-  const port = process.env.PORT || 4200;
-  app.listen(port, () => console.log(`Сервер запущен на порту ${port}`));
+    // Запуск Express.js сервера
+    app.listen(port, (err) => {
+        if (err) throw err;
+        console.log(`Сервер запущен на порту ${port}`);
+    });
+}).catch((ex) => {
+    console.error(ex.stack);
+    process.exit(1);
 });
