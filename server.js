@@ -1,7 +1,7 @@
 const express = require('express');
 const next = require('next');
 const dev = process.env.NODE_ENV !== 'production';
-const nextApp = next({ dev, dir: '../rasp-frontend' });
+const nextApp = next({ start, dir: '../rasp-frontend' });
 const handle = nextApp.getRequestHandler();
 const fs = require('fs');
 const cors = require('cors'); // Подключаем модуль CORS
