@@ -8,14 +8,9 @@ const handle = appNext.getRequestHandler();
 
 appNext.prepare().then(() => {
     const app = express();
-    const port = process.env.PORT || 4200;
+    const port = process.env.PORT || 3000;
 
-    app.use(express.json());
-
-    // Обслуживание статических файлов Next.js из папки .next
-    app.use(express.static('rasp-frontend/.next'));
-
-    // API-маршрут для поиска
+    // Обслуживание API-маршрутов
     app.get('/api/search', (req, res) => {
         const groupName = req.query.group;
         fs.readFile('rasp-data.json', 'utf8', (err, data) => {
@@ -32,8 +27,11 @@ appNext.prepare().then(() => {
         });
     });
 
-    // Маршрут для обслуживания Next.js приложения
-    app.get('*', (req, res) => {
+    // Маршрут для обслуживания Next.js приложения и статических файлов
+    app.use(express.static('rasp-frontend/.next'));
+
+    // Передача всех остальных запросов Next.js приложению
+    app.all('*', (req, res) => {
         return handle(req, res);
     });
 
