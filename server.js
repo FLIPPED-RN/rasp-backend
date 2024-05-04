@@ -3,8 +3,10 @@ const fs = require('fs');
 const app = express();
 const cors = require('cors'); // Подключаем модуль CORS
 
+//обвновленное расписание 06.05.2024-11.05.2024
+
 app.use(express.json());
-app.use(cors()); // Используем CORS middleware для разрешения запросов от другого источника
+app.use(cors());
 
 app.get('/api/search', (req, res) => {
     const groupName = req.query.group;
