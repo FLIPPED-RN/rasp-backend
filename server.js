@@ -3,8 +3,6 @@ const fs = require('fs');
 const app = express();
 const cors = require('cors'); // Подключаем модуль CORS
 
-//обвновленное расписание 06.05.2024-11.05.2024
-
 app.use(express.json());
 app.use(cors());
 
